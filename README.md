@@ -220,4 +220,4 @@ RAG over a domain the author knows deeply — useful for spotting hallucinations
 
 - GitHub: [github.com/obuchtala](https://github.com/obuchtala)
 - IBM Agentic AI & RAG Certificate, May 2026 (LangGraph, RAG pipelines, vector databases)
-- Former Research Associate, JKU Linz (2009–2013)
+- Former Research Associate, University of Passau (2002–2009) and JKU Linz (2009–2013)
