@@ -42,6 +42,41 @@ S2_FIELDS = [
 ]
 
 
+def _paper_cache_path(cache_dir: Path, paper_id: str) -> Path:
+    return cache_dir / f"{paper_id}.json"
+
+
+def _load_cached_paper(cache_dir: Path, paper_id: str) -> dict | None:
+    path = _paper_cache_path(cache_dir, paper_id)
+    if path.exists():
+        return json.loads(path.read_text())
+    return None
+
+
+def _save_cached_paper(cache_dir: Path, paper: dict) -> None:
+    _paper_cache_path(cache_dir, paper["paper_id"]).write_text(json.dumps(paper))
+
+
+def _migrate_legacy_cache(cache_dir: Path) -> None:
+    """Split a legacy monolithic papers.json into per-paper files (one-time migration)."""
+    legacy = cache_dir / "papers.json"
+    if not legacy.exists():
+        return
+    try:
+        papers = json.loads(legacy.read_text())
+    except Exception:
+        return
+    migrated = sum(
+        1
+        for p in papers
+        if (pid := p.get("paper_id"))
+        and not _paper_cache_path(cache_dir, pid).exists()
+        and (_save_cached_paper(cache_dir, p) or True)
+    )
+    if migrated:
+        console.print(f"[cyan]Migrated {migrated} papers from legacy cache to per-paper files.[/cyan]")
+
+
 def build_document_text(paper: dict) -> str:
     """Build the text to embed: title + abstract + TLDR."""
     parts = [paper.get("title", "")]
@@ -79,7 +114,13 @@ def _paper_to_dict(paper, source: str) -> dict:
     }
 
 
-def fetch_seed_papers(author_name: str, sch: SemanticScholar, sleep_interval: float = 1.0) -> list[dict]:
+def fetch_seed_papers(
+    author_name: str,
+    sch: SemanticScholar,
+    sleep_interval: float = 1.0,
+    cache_dir: Path | None = None,
+    no_cache: bool = False,
+) -> list[dict]:
     """Look up author on Semantic Scholar and return their papers with full details."""
     console.print(f"[cyan]Searching for author:[/cyan] {author_name}")
 
@@ -99,10 +140,19 @@ def fetch_seed_papers(author_name: str, sch: SemanticScholar, sleep_interval: fl
 
     papers: list[dict] = []
     for paper_id in track(paper_ids, description="Fetching seed papers…"):
+        if cache_dir and not no_cache:
+            cached = _load_cached_paper(cache_dir, paper_id)
+            if cached:
+                cached["source"] = "seed"
+                papers.append(cached)
+                continue
         try:
             p = sch.get_paper(paper_id, fields=S2_FIELDS)
             if p and p.title:
-                papers.append(_paper_to_dict(p, source="seed"))
+                d = _paper_to_dict(p, source="seed")
+                if cache_dir:
+                    _save_cached_paper(cache_dir, d)
+                papers.append(d)
             time.sleep(sleep_interval)
         except Exception as exc:
             console.print(f"[yellow]Skipping {paper_id}: {exc}[/yellow]")
@@ -139,6 +189,8 @@ def expand_corpus(
     sch: SemanticScholar,
     max_papers: int = 50,
     sleep_interval: float = 1.0,
+    cache_dir: Path | None = None,
+    no_cache: bool = False,
 ) -> list[dict]:
     """1-hop expansion: fetch papers that cite the seed set.
 
@@ -159,14 +211,22 @@ def expand_corpus(
 
     expanded: list[dict] = []
     for paper_id in track(candidate_ids, description="Expanding corpus…  "):
+        if cache_dir and not no_cache:
+            cached = _load_cached_paper(cache_dir, paper_id)
+            if cached:
+                cached["source"] = "expanded"
+                expanded.append(cached)
+                continue
         try:
             p = sch.get_paper(
                 paper_id,
-                fields=["paperId", "title", "abstract", "year", "venue",
-                        "authors", "citationCount", "tldr"],
+                fields=S2_FIELDS,
             )
             if p and p.title and p.abstract:
-                expanded.append(_paper_to_dict(p, source="expanded"))
+                d = _paper_to_dict(p, source="expanded")
+                if cache_dir:
+                    _save_cached_paper(cache_dir, d)
+                expanded.append(d)
             time.sleep(sleep_interval)
         except Exception as exc:
             console.print(f"[yellow]Skipping {paper_id}: {exc}[/yellow]")
@@ -210,36 +270,34 @@ def ingest(
     qdrant_api_key = (os.getenv("QDRANT_API_KEY") or "").strip() or None
 
     cache_dir = Path(os.getenv("CACHE_DIR", "cache")) / "s2-papers"
-    cache_file = cache_dir / "papers.json"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    if not no_cache:
+        _migrate_legacy_cache(cache_dir)
 
     qdrant = QdrantClient(url=qdrant_url, api_key=qdrant_api_key)
     dense_model = SentenceTransformer(DENSE_MODEL)
     sparse_model = SparseTextEmbedding(model_name=SPARSE_MODEL)
 
-    # --- fetch (or load from cache) ---
-    if not no_cache and cache_file.exists():
-        console.print(f"[cyan]Loading corpus from cache:[/cyan] {cache_file}")
-        all_papers = json.loads(cache_file.read_text())
-        console.print(f"[green]Loaded[/green] {len(all_papers)} papers from cache.")
-    else:
-        sch = SemanticScholar(api_key=s2_api_key)
-        sleep_interval = _SLEEP_WITH_KEY if s2_api_key else _SLEEP_NO_KEY
+    # --- fetch (per-paper cache checked inside each function) ---
+    sch = SemanticScholar(api_key=s2_api_key)
+    sleep_interval = _SLEEP_WITH_KEY if s2_api_key else _SLEEP_NO_KEY
 
-        seed_papers = fetch_seed_papers(author, sch, sleep_interval)
-        console.print(f"[green]Fetched[/green] {len(seed_papers)} seed papers.")
+    seed_papers = fetch_seed_papers(
+        author, sch, sleep_interval, cache_dir=cache_dir, no_cache=no_cache
+    )
+    console.print(f"[green]Fetched[/green] {len(seed_papers)} seed papers.")
 
-        all_papers = list(seed_papers)
-        if expand_hops > 0:
-            expanded = expand_corpus(seed_papers, sch, sleep_interval=sleep_interval)
-            all_papers.extend(expanded)
-            console.print(
-                f"[green]Total corpus:[/green] {len(all_papers)} papers "
-                f"({len(expanded)} expanded)."
-            )
-
-        cache_dir.mkdir(parents=True, exist_ok=True)
-        cache_file.write_text(json.dumps(all_papers, indent=2))
-        console.print(f"[cyan]Corpus cached to:[/cyan] {cache_file}")
+    all_papers = list(seed_papers)
+    if expand_hops > 0:
+        expanded = expand_corpus(
+            seed_papers, sch, sleep_interval=sleep_interval,
+            cache_dir=cache_dir, no_cache=no_cache,
+        )
+        all_papers.extend(expanded)
+        console.print(
+            f"[green]Total corpus:[/green] {len(all_papers)} papers "
+            f"({len(expanded)} expanded)."
+        )
 
     # --- deduplicate ---
     seen: set[str] = set()
