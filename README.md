@@ -199,6 +199,8 @@ Every `ask` invocation is traced to [Langfuse Cloud](https://cloud.langfuse.com)
 Tracing is opt-in — set `LANGFUSE_PUBLIC_KEY` and `LANGFUSE_SECRET_KEY` in `.env` to enable.
 If those keys are absent the graph runs normally with no tracing and no errors.
 
+![Langfuse trace — cross-corpus synthesis query](assets/screenshot_langfuse_trace_example_cross_corpus_synthesis.png)
+
 ---
 
 ## Development environment
