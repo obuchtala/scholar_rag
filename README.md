@@ -76,7 +76,7 @@ flowchart TD
 - **Docker Desktop** (runs Qdrant locally)
 - **Mistral API key** — [console.mistral.ai](https://console.mistral.ai)
 - **uv** — `pip install uv` (or see [astral.sh/uv](https://astral.sh/uv))
-- Semantic Scholar API key — optional, free at [semanticscholar.org/product/api](https://www.semanticscholar.org/product/api)
+- Semantic Scholar API key — recommended for reliable corpus expansion; institutions and companies can request one at [semanticscholar.org/product/api](https://www.semanticscholar.org/product/api)
 - Langfuse Cloud account — optional, free at [cloud.langfuse.com](https://cloud.langfuse.com) (for observability)
 
 ---

@@ -26,7 +26,8 @@
 	"remoteUser": "vscode",
 
 	"runArgs": [
-        "--env-file", ".env"
+        "--env-file", ".env",
+        "--add-host=host.docker.internal:host-gateway"
     ],
 
 	// Uncomment when running on the DigitalOcean droplet (persistent Claude session storage):
