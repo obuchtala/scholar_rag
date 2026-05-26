@@ -33,11 +33,16 @@ def ingest(
         "--expand-hops",
         help="Number of citation hops to expand beyond seed papers (0 = seed only).",
     ),
+    no_cache: bool = typer.Option(
+        False,
+        "--no-cache",
+        help="Ignore existing cache and re-fetch from Semantic Scholar.",
+    ),
 ) -> None:
     """Ingest an author's papers from Semantic Scholar into the Qdrant vector store."""
     from scholar_rag.ingest import ingest as run_ingest
 
-    count = run_ingest(author=author, expand_hops=expand_hops)
+    count = run_ingest(author=author, expand_hops=expand_hops, no_cache=no_cache)
     console.print(f"[bold green]Done![/bold green] Indexed {count} papers.")
 
 

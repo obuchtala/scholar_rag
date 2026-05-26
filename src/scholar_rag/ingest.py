@@ -1,8 +1,10 @@
 """Ingestion pipeline: Semantic Scholar → embed → Qdrant."""
 
+import json
 import os
 import time
 import uuid
+from pathlib import Path
 from typing import Optional
 
 from dotenv import load_dotenv
@@ -198,6 +200,7 @@ def ingest(
     qdrant_url: Optional[str] = None,
     collection: Optional[str] = None,
     s2_api_key: Optional[str] = None,
+    no_cache: bool = False,
 ) -> int:
     """Full ingest pipeline. Returns the number of documents upserted."""
     qdrant_url = qdrant_url or os.getenv("QDRANT_URL", "http://localhost:6333")
@@ -206,24 +209,37 @@ def ingest(
 
     qdrant_api_key = (os.getenv("QDRANT_API_KEY") or "").strip() or None
 
-    sch = SemanticScholar(api_key=s2_api_key)
-    sleep_interval = _SLEEP_WITH_KEY if s2_api_key else _SLEEP_NO_KEY
+    cache_dir = Path(os.getenv("CACHE_DIR", "cache/scholar-rag"))
+    cache_file = cache_dir / "papers.json"
+
     qdrant = QdrantClient(url=qdrant_url, api_key=qdrant_api_key)
     dense_model = SentenceTransformer(DENSE_MODEL)
     sparse_model = SparseTextEmbedding(model_name=SPARSE_MODEL)
 
-    # --- fetch ---
-    seed_papers = fetch_seed_papers(author, sch, sleep_interval)
-    console.print(f"[green]Fetched[/green] {len(seed_papers)} seed papers.")
+    # --- fetch (or load from cache) ---
+    if not no_cache and cache_file.exists():
+        console.print(f"[cyan]Loading corpus from cache:[/cyan] {cache_file}")
+        all_papers = json.loads(cache_file.read_text())
+        console.print(f"[green]Loaded[/green] {len(all_papers)} papers from cache.")
+    else:
+        sch = SemanticScholar(api_key=s2_api_key)
+        sleep_interval = _SLEEP_WITH_KEY if s2_api_key else _SLEEP_NO_KEY
 
-    all_papers = list(seed_papers)
-    if expand_hops > 0:
-        expanded = expand_corpus(seed_papers, sch, sleep_interval=sleep_interval)
-        all_papers.extend(expanded)
-        console.print(
-            f"[green]Total corpus:[/green] {len(all_papers)} papers "
-            f"({len(expanded)} expanded)."
-        )
+        seed_papers = fetch_seed_papers(author, sch, sleep_interval)
+        console.print(f"[green]Fetched[/green] {len(seed_papers)} seed papers.")
+
+        all_papers = list(seed_papers)
+        if expand_hops > 0:
+            expanded = expand_corpus(seed_papers, sch, sleep_interval=sleep_interval)
+            all_papers.extend(expanded)
+            console.print(
+                f"[green]Total corpus:[/green] {len(all_papers)} papers "
+                f"({len(expanded)} expanded)."
+            )
+
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        cache_file.write_text(json.dumps(all_papers, indent=2))
+        console.print(f"[cyan]Corpus cached to:[/cyan] {cache_file}")
 
     # --- deduplicate ---
     seen: set[str] = set()
