@@ -48,7 +48,7 @@ flowchart TD
 ### How a query flows
 
 1. **`router`** classifies intent with a single LLM call (`max_tokens=10`): `retrieval`, `direct`, or `out_of_scope`.
-2. **`retriever`** runs a ReAct loop — calls tools iteratively until it has enough context.
+2. **`retriever`** runs a ReAct loop — the agent plans which tools to call and in what order, accumulates results in its context window, and decides when it has gathered enough evidence to answer. This in-query planning and context management is the core of the agentic behaviour.
 3. **`responder`** synthesises the gathered context into a cited answer.
 4. **`refuser`** short-circuits unrelated queries with a fixed message — no further LLM calls.
 
