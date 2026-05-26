@@ -124,58 +124,19 @@ The `app` service uses `QDRANT_URL=http://qdrant:6333` (compose network) automat
 $ uv run scholar-rag ask "What is the main contribution of the 2005 IEEE SMC paper?"
 ```
 
-```
-The 2005 IEEE Transactions on Systems, Man, and Cybernetics paper by Buchtala et al.
-introduces an **evolutionary optimisation approach for RBF classifier design**. The key
-contribution is a genetic algorithm that simultaneously evolves the structure (number and
-placement of radial basis functions) and parameters of the classifier, avoiding the need
-for manual architecture selection.
-
-The method was benchmarked on standard UCI datasets and outperformed fixed-architecture
-RBF networks trained with gradient descent, particularly on small-sample problems where
-overfitting is a concern [Buchtala et al., 2005].
-
-**Sources**
-- [<paper_id>] An Evolutionary Algorithm for RBF Classifier Design — IEEE Trans. SMC, 2005
-```
+![Targeted paper lookup](assets/screenshot_example_targeted_paper_lookup.png)
 
 ---
 
 ### 2 — Multi-hop citation traversal  *(demonstrates agentic tool use)*
 
 ```
-$ uv run scholar-rag ask "Which later works built on the evolutionary RBF approach?" --verbose
+$ uv run scholar-rag ask "Which later works built on the evolutionary RBF approach?"
 ```
 
-```
-── Retrieved context ──
-[search_corpus] Found 5 relevant papers: ...
-[get_citations] Papers citing 'An Evolutionary Algorithm for RBF Classifier Design' (top 10): ...
-[get_paper_details] [<paper_id>] Hybrid Evolutionary-Gradient RBF Training (2008) ...
-──────────────────────
+![Multi-hop citation traversal](assets/screenshot_example_multihop_traversal.png)
 
-Several lines of work extended the evolutionary RBF approach:
-
-**Direct extensions (citing the 2005 paper):**
-- [Author et al., 2008] combined the evolutionary structure search with local gradient
-  refinement, reducing convergence time while retaining the architecture flexibility.
-- [Author et al., 2011] applied the same evolutionary framework to deep RBF networks,
-  scaling to higher-dimensional feature spaces.
-
-**Parallel development:**
-The fuzzy-RBF hybrid approach explored in [Buchtala et al., 2007] shares the motivation
-of avoiding manual architecture decisions, using fuzzy partitioning to initialise the
-RBF centres before evolutionary refinement.
-
-**Sources**
-- [<paper_id>] An Evolutionary Algorithm for RBF Classifier Design, 2005
-- [<paper_id>] Hybrid Evolutionary-Gradient RBF Training, 2008
-- ...
-
-Langfuse trace: https://cloud.langfuse.com/traces/<trace-id>
-```
-
-The `--verbose` flag shows each tool call the agent made. This query triggered `search_corpus` → `get_citations` → `get_paper_details` — three tools, two API hops.
+This query triggered `search_corpus` → `get_citations` → `get_paper_details` — three tools, two live API hops beyond the local vector store.
 
 ---
 
@@ -185,31 +146,7 @@ The `--verbose` flag shows each tool call the agent made. This query triggered `
 $ uv run scholar-rag ask "Compare the fuzzy classifier and RBF approaches across the publications"
 ```
 
-```
-Across Oliver Buchtala's publications, two complementary approaches to pattern
-classification emerge:
-
-**Fuzzy classifier line** [papers from 2001–2006]
-Focuses on interpretability: classification rules are expressed as fuzzy IF-THEN
-statements, making decisions human-readable. The key challenge addressed is learning
-compact, accurate rule bases from data. These papers prioritise explainability over
-raw accuracy.
-
-**RBF classifier line** [papers from 2003–2008]
-Focuses on generalisation: radial basis function networks provide smooth decision
-boundaries and are well-suited to small-sample regimes. The evolutionary approach
-automates architecture selection — the main engineering bottleneck.
-
-**Convergence point**
-The 2007 work on fuzzy-RBF hybrids synthesises both lines: RBF centres are initialised
-from fuzzy partitions, and the final model retains interpretable structure while achieving
-RBF-level accuracy. This paper has the highest citation count in the corpus.
-
-**Sources**
-- [<paper_id>] Evolutionary Fuzzy Classifier, 2003
-- [<paper_id>] An Evolutionary Algorithm for RBF Classifier Design, 2005
-- [<paper_id>] Fuzzy-RBF Hybrid Classifier, 2007
-```
+![Cross-corpus synthesis](assets/screenshot_example_cross_corpus_synthesis.png)
 
 ---
 
