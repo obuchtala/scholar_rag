@@ -9,7 +9,9 @@ services:
     restart: unless-stopped
 
   app:
-    build: .
+    image: ghcr.io/obuchtala/scholar_rag:latest
+    # To build locally instead: comment out 'image' and uncomment 'build'
+    # build: .
     env_file: .env
     environment:
       QDRANT_URL: http://qdrant:6333
