@@ -172,7 +172,7 @@ RBF centres before evolutionary refinement.
 - [<paper_id>] Hybrid Evolutionary-Gradient RBF Training, 2008
 - ...
 
-Langfuse trace: https://cloud.langfuse.com
+Langfuse trace: https://cloud.langfuse.com/traces/<trace-id>
 ```
 
 The `--verbose` flag shows each tool call the agent made. This query triggered `search_corpus` → `get_citations` → `get_paper_details` — three tools, two API hops.
@@ -229,9 +229,9 @@ scholar-rag/
 │   └── tools/
 │       ├── qdrant_search.py    # hybrid search (dense + BM42 sparse, RRF)
 │       └── semantic_scholar.py # get_paper_details / get_citations / get_references
-├── tests/                      # 36 tests, all external deps mocked
-├── doc/                        # per-phase docs, how-tos, Q&A
-├── docker-compose.yml          # Qdrant + Langfuse + Postgres + app
+├── tests/                      # 37 unit + 4 integration tests
+├── doc/                        # deployment guide
+├── docker-compose.yml          # Qdrant + app
 ├── Dockerfile                  # python:3.12-slim + uv
 └── pyproject.toml              # uv-managed dependencies
 ```
@@ -261,6 +261,15 @@ Every `ask` invocation is traced to [Langfuse Cloud](https://cloud.langfuse.com)
 
 Tracing is opt-in — set `LANGFUSE_PUBLIC_KEY` and `LANGFUSE_SECRET_KEY` in `.env` to enable.
 If those keys are absent the graph runs normally with no tracing and no errors.
+
+---
+
+## Development environment
+
+Developed in a VS Code devcontainer on a DigitalOcean droplet with persistent storage —
+providing a consistent, isolated workspace across sessions.
+
+Development was assisted by [Claude Code](https://claude.ai/code) throughout.
 
 ---
 
