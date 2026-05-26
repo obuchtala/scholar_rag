@@ -28,6 +28,12 @@ ln -s "$CLAUDE_PERSIST/.claude.json" "$HOME/.claude.json"
 # Install nodejs (npx is used in the example for running context7 MCP-server)
 # . ${NVM_DIR}/nvm.sh && nvm install --lts
 
+# Link block-storage cache mount into project tree (droplet only)
+CACHE_MOUNT="/workspaces/scholar-rag-cache"
+if [ -d "$CACHE_MOUNT" ]; then
+    ln -sfn "$CACHE_MOUNT" /workspaces/dev_scholar_rag/cache
+fi
+
 # Install required python packages (includes uv)
 pip3 install --upgrade pip
 pip3 install --user -r requirements.txt
