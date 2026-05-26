@@ -30,8 +30,14 @@ ln -s "$CLAUDE_PERSIST/.claude.json" "$HOME/.claude.json"
 
 # Link block-storage cache mount into project tree (droplet only)
 CACHE_MOUNT="/workspaces/scholar-rag-cache"
+CACHE_LINK="/workspaces/dev_scholar_rag/cache"
 if [ -d "$CACHE_MOUNT" ]; then
-    ln -sfn "$CACHE_MOUNT" /workspaces/dev_scholar_rag/cache
+    sudo chown vscode:vscode "$CACHE_MOUNT"
+    # Remove existing real directory so ln can create the symlink (not place it inside)
+    if [ -d "$CACHE_LINK" ] && [ ! -L "$CACHE_LINK" ]; then
+        rm -rf "$CACHE_LINK"
+    fi
+    ln -sfn "$CACHE_MOUNT" "$CACHE_LINK"
 fi
 
 # Install required python packages (includes uv)
