@@ -43,6 +43,15 @@ dev = [
     "pytest-mock>=3.12",
 ]
 
+[tool.uv.sources]
+# CPU-only PyTorch — sentence-transformers runs on CPU; triton (GPU compiler) not needed
+torch = [{ index = "pytorch-cpu" }]
+
+[[tool.uv.indexes]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
