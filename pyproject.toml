@@ -19,6 +19,7 @@ dependencies = [
     "qdrant-client>=1.12",
     "fastembed>=0.4",          # BM42 sparse vectors for hybrid search
     # Embeddings (local, no API cost)
+    "torch>=2.0",              # explicit dep so [tool.uv.sources] can redirect to CPU wheel
     "sentence-transformers>=3.0",
     # Semantic Scholar API
     "semanticscholar>=0.8",
@@ -43,9 +44,14 @@ dev = [
     "pytest-mock>=3.12",
 ]
 
-[tool.uv]
+[tool.uv.sources]
 # CPU-only PyTorch — sentence-transformers runs on CPU; triton (GPU compiler) not needed
-torch-backend = "cpu"
+torch = [{ index = "pytorch-cpu" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
