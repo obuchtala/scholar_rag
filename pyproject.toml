@@ -1,0 +1,52 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "scholar-rag"
+version = "0.1.0"
+description = "Multi-agent RAG system for exploring academic literature via citation graph traversal"
+requires-python = ">=3.12"
+dependencies = [
+    # CLI
+    "typer>=0.12",
+    # LangGraph / LangChain
+    "langgraph>=0.2",
+    "langchain>=0.3",
+    "langchain-mistralai>=0.2",
+    "langchain-community>=0.3",
+    # Vector store
+    "qdrant-client>=1.12",
+    "fastembed>=0.4",          # BM42 sparse vectors for hybrid search
+    # Embeddings (local, no API cost)
+    "sentence-transformers>=3.0",
+    # Semantic Scholar API
+    "semanticscholar>=0.8",
+    # Observability
+    "langfuse>=3.0",  # optional — tracing skipped gracefully if keys not set; use Langfuse Cloud
+    # Utilities
+    "python-dotenv>=1.0",
+    "rich>=13.0",
+    "pydantic>=2.0",
+]
+
+[project.scripts]
+scholar-rag = "scholar_rag.cli:app"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/scholar_rag"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "pytest-mock>=3.12",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-m 'not integration'"
+markers = [
+    "integration: requires live Qdrant and/or Mistral API key (deselected by default)",
+]

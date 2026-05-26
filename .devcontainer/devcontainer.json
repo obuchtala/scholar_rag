@@ -1,0 +1,36 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/python
+{
+	"name": "cv_2026",
+	"image": "mcr.microsoft.com/devcontainers/python:3.12-bookworm",
+
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	"features": {
+		"ghcr.io/devcontainers-extra/features/claude-code:2": {},
+		"ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+	},
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// "forwardPorts": [],
+
+	// Runs on the host before container creation — fail early if .env is missing.
+	// "initializeCommand": "test -f .devcontainer/.env || (echo 'ERROR: .devcontainer/.env is missing. Copy .devcontainer/.env.template and fill in values.' && exit 1)",
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	"postCreateCommand": "sh .devcontainer/post_create.sh",
+
+	// Configure tool-specific properties.
+	// "customizations": {},
+
+	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+	"remoteUser": "vscode",
+
+	"runArgs": [
+        "--env-file", ".env"
+    ],
+
+	"mounts": [
+        "source=capstone-claude-persist,target=/workspaces/claude-persist,type=volume"
+        // "source=/mnt/projects/claude-persist,target=/workspaces/claude-persist,type=bind"
+    ]
+}
