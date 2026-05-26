@@ -29,7 +29,8 @@
         "--env-file", ".env"
     ],
 
-	"mounts": [
-        "source=/mnt/projects/claude-persist,target=/workspaces/claude-persist,type=bind"
-    ]
+	// Uncomment when running on the DigitalOcean droplet (persistent Claude session storage):
+	// "mounts": [
+	//     "source=/mnt/projects/claude-persist,target=/workspaces/claude-persist,type=bind"
+	// ]
 }
