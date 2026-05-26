@@ -10,10 +10,10 @@ repeating hours of API calls.
 
 | Decision | Choice |
 |---|---|
-| Cache location | Configured via `CACHE_DIR` env var |
-| Default `CACHE_DIR` | `cache/scholar-rag` (relative to project root) |
-| Droplet | `/mnt/projects/scholar-rag/cache` (block storage, survives rebuilds) |
-| Cache file | `$CACHE_DIR/papers.json` |
+| Cache location | Configured via `CACHE_DIR` env var (project-wide) |
+| Default `CACHE_DIR` | `cache` (relative to project root) |
+| Droplet | `/mnt/projects/cache/scholar-rag` (block storage, survives rebuilds) |
+| Cache file | `$CACHE_DIR/s2-papers/papers.json` (subdir owned by ingest) |
 | Cache invalidation | `--no-cache` flag on `ingest` command |
 | Cache format | JSON array of paper dicts (already plain dicts — no serialisation needed) |
 

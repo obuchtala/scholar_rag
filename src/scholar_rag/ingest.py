@@ -209,7 +209,7 @@ def ingest(
 
     qdrant_api_key = (os.getenv("QDRANT_API_KEY") or "").strip() or None
 
-    cache_dir = Path(os.getenv("CACHE_DIR", "cache/scholar-rag"))
+    cache_dir = Path(os.getenv("CACHE_DIR", "cache")) / "s2-papers"
     cache_file = cache_dir / "papers.json"
 
     qdrant = QdrantClient(url=qdrant_url, api_key=qdrant_api_key)

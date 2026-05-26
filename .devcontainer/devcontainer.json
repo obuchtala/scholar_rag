@@ -35,4 +35,5 @@
 	//     "source=/mnt/projects/claude-persist,target=/workspaces/claude-persist,type=bind",
 	//     "source=/mnt/projects/cache/scholar-rag,target=/workspaces/dev_scholar_rag/cache,type=bind"
 	// ]
+	// With CACHE_DIR=cache in .env, S2 papers land at cache/s2-papers/papers.json → block storage.
 }
