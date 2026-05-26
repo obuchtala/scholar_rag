@@ -30,7 +30,6 @@
     ],
 
 	"mounts": [
-        "source=capstone-claude-persist,target=/workspaces/claude-persist,type=volume"
-        // "source=/mnt/projects/claude-persist,target=/workspaces/claude-persist,type=bind"
+        "source=/mnt/projects/claude-persist,target=/workspaces/claude-persist,type=bind"
     ]
 }
