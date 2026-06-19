@@ -50,9 +50,20 @@ def responder_node(state: ResearchState) -> dict:
 
     answer = response.content if isinstance(response.content, str) else str(response.content)
 
-    # Extract source paper IDs mentioned in the answer (simple heuristic)
-    # TODO add an example to better understand what this heuristic does
-    # TODO: use structured output for the query above?
+    # Extract cited paper IDs from the answer.
+    #
+    # This is not general LLM-output parsing: Semantic Scholar paper IDs are SHA-1
+    # hashes (40 lowercase hex chars), a format that never appears naturally in
+    # academic prose. The search tool embeds them verbatim in the retrieved context
+    # (e.g. "[649def34...] Attention Is All You Need"), and the system prompt
+    # instructs the model to reproduce them in a Sources section — so the regex is
+    # scanning for a known, machine-generated token, not interpreting free text.
+    #
+    # False positives: practically impossible (random 40-char hex in prose ≈ 0).
+    # Failure mode: if the model omits the Sources section, sources is silently [],
+    # which is preferable to garbage. The structured-output alternative
+    # (with_structured_output) would give a stronger guarantee here and is the
+    # right call if this node is ever extended.
     sources = list(dict.fromkeys(re.findall(r"\b[0-9a-f]{40}\b", answer)))
 
     return {"answer": answer, "sources": sources}
