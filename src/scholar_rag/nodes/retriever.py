@@ -48,10 +48,10 @@ def retriever_node(state: ResearchState) -> dict:
         if hasattr(msg, "type") and msg.type == "tool":
             retrieved_texts.append(msg.content)
 
-    # The final AI message is the agent's synthesis
+    # The final AI message is the one with no tool_calls — the agent's synthesis
     final_answer = ""
     for msg in reversed(messages):
-        if isinstance(msg, AIMessage) and msg.content:
+        if isinstance(msg, AIMessage) and not msg.tool_calls:
             final_answer = msg.content if isinstance(msg.content, str) else str(msg.content)
             break
 
