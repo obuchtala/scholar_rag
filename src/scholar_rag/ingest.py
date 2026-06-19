@@ -194,8 +194,8 @@ def expand_corpus(
 ) -> list[dict]:
     """1-hop expansion: fetch papers that cite the seed set.
 
-    Uses forward citations rather than references because the publisher has
-    elided the references field from the API ("references" returns null).
+    Uses forward citations rather than references because some publishers have
+    elided the references field (along with some other fields) from the API ("references" returns null).
     """
     seed_ids = {p["paper_id"] for p in seed_papers}
 
