@@ -199,11 +199,14 @@ def expand_corpus(
     """
     seed_ids = {p["paper_id"] for p in seed_papers}
 
-    candidate_ids: set[str] = set()
+    seen: set[str] = set(seed_ids)
+    candidate_ids: list[str] = []
     for paper in seed_papers:
-        candidate_ids.update(_get_citing_paper_ids(paper["paper_id"], sleep_interval=sleep_interval))
-    candidate_ids -= seed_ids
-    candidate_ids = set(list(candidate_ids)[:max_papers])
+        for pid in _get_citing_paper_ids(paper["paper_id"], sleep_interval=sleep_interval):
+            if pid not in seen:
+                seen.add(pid)
+                candidate_ids.append(pid)
+    candidate_ids = candidate_ids[:max_papers]
 
     console.print(
         f"[cyan]Expanding corpus:[/cyan] fetching up to {len(candidate_ids)} citing papers…"
