@@ -13,4 +13,7 @@ COPY src/ src/
 ENV UV_SYSTEM_PYTHON=1
 RUN uv sync --no-dev --frozen
 
+RUN useradd -u 1000 -m appuser && chown -R appuser:appuser /app
+USER appuser
+
 ENTRYPOINT ["uv", "run", "scholar-rag"]
