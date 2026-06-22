@@ -103,6 +103,16 @@ def ask(
         console.print(f"\n[dim]Langfuse trace: {langfuse_url}[/dim]")
 
 
+@app.command()
+def ui(
+    host: str = typer.Option("0.0.0.0", help="Host to bind to."),
+    port: int = typer.Option(7860, help="Port to listen on."),
+) -> None:
+    """Launch the Gradio web interface."""
+    from scholar_rag.ui import demo
+    demo.launch(server_name=host, server_port=port)
+
+
 @app.command(name="list-papers")
 def list_papers() -> None:
     """List all papers indexed in the Qdrant vector store."""

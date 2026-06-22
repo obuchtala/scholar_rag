@@ -22,5 +22,19 @@ services:
     profiles:
       - app
 
+  ui:
+    build: .
+    env_file: .env
+    environment:
+      QDRANT_URL: http://qdrant:6333
+    volumes:
+      - ${CACHE_DIR}:${CACHE_DIR}
+    ports:
+      - "7860:7860"
+    command: ["ui"]
+    depends_on:
+      - qdrant
+    restart: unless-stopped
+
 volumes:
   qdrant_data:
