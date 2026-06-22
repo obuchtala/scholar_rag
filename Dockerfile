@@ -13,10 +13,4 @@ COPY src/ src/
 ENV UV_SYSTEM_PYTHON=1
 RUN uv sync --no-dev --frozen
 
-# Pre-download the embedding model so the container is self-contained
-RUN for i in 1 2 3 4 5; do \
-      python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')" && break; \
-      echo "Retry $i failed, waiting..."; sleep 10; \
-    done
-
 ENTRYPOINT ["uv", "run", "scholar-rag"]
