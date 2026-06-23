@@ -39,5 +39,4 @@ demo = gr.Interface(
     examples=EXAMPLES,
     title="Scholar RAG",
     description="Ask questions about Oliver Buchtala's research publications.",
-    allow_flagging="never",
 )
