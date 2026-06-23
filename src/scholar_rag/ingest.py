@@ -169,6 +169,7 @@ def _get_citing_paper_ids(paper_id: str, limit: int = 100, sleep_interval: float
         r = requests.get(
             f"https://api.semanticscholar.org/graph/v1/paper/{paper_id}/citations",
             params={"fields": "paperId", "limit": 100, "offset": offset},
+            timeout=10,
         )
         if r.status_code != 200:
             break

@@ -13,7 +13,7 @@ _S2_FIELDS_DETAIL = [
 
 def _get_client() -> SemanticScholar:
     api_key = os.getenv("S2_API_KEY") or None
-    return SemanticScholar(api_key=api_key)
+    return SemanticScholar(api_key=api_key, timeout=10, retry=False)
 
 
 def _format_paper(paper) -> str:
